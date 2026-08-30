@@ -1,14 +1,11 @@
 library(tidyverse)
-library(tidyverse)
 library(ompr)
 library(ompr.roi)
 library(ROI.plugin.glpk)
-library(dplyr)
-library(ggplot2)
 
 set.seed(42)
 
-# ---- 1. Employee types and their eligible task types ----
+# Employee types and the task types each type is qualified to handle
 employee_types <- list(
   "Academic Advisor"  = c("General", "Academic"),
   "IT Support"         = c("General", "Technical"),
@@ -24,35 +21,35 @@ employees <- tibble(
            "Senior Generalist")
 )
 
-# ---- 2. Capacity: base hours minus training/research/meetings ----
+# Available capacity per employee: base hours minus meetings, training, research commitments
 employees <- employees %>%
   mutate(
     base_hours       = 35,
-    meeting_overhead = 4,                                   # everyone loses this
-    training_hours   = c(6, 0, 0,  0, 5, 0,  0, 0, 4,  0),   # E1, E5, E9 are newer hires
-    research_hours   = c(0, 0, 8,  0, 0, 0,  6, 0, 0,  0),   # E3, E7 on a research project
+    meeting_overhead = 4,
+    training_hours   = c(6, 0, 0,  0, 5, 0,  0, 0, 4,  0),  # E1, E5, E9 are newer hires
+    research_hours   = c(0, 0, 8,  0, 0, 0,  6, 0, 0,  0),  # E3, E7 on a research project
     available_hours  = base_hours - meeting_overhead - training_hours - research_hours
   )
 
-# ---- 3. Eligibility (long format: one row per employee-tasktype pair they can do) ----
+# Long-format eligibility: one row per employee-task_type pair they're qualified for
 eligibility <- employees %>%
   mutate(skills = map(type, ~ employee_types[[.x]])) %>%
   select(employee_id, skills) %>%
   unnest(skills) %>%
   rename(task_type = skills)
 
-# ---- 4. Preferences: 5 employees, 1-2 preferred types each, drawn from what they can do ----
+# Soft preferences: 5 employees each prefer 1-2 of the task types they're eligible for
 set.seed(7)
 pref_employees <- sample(employees$employee_id, 5)
 
 preferences <- eligibility %>%
   filter(employee_id %in% pref_employees) %>%
   group_by(employee_id) %>%
-  slice_sample(n = sample(1:2, 1)) %>%   # each prefers 1 or 2 of their eligible types
+  slice_sample(n = sample(1:2, 1)) %>%
   ungroup() %>%
   rename(task_type_preferred = task_type)
 
-# ---- 5. Weekly task instances ----
+# Simulated week of inquiries, weighted by realistic volume and duration per type
 task_volume_weights <- c(General = 0.50, Academic = 0.20, Technical = 0.15, Financial = 0.15)
 duration_ranges <- list(General = c(10, 20), Academic = c(30, 60),
                          Technical = c(30, 45), Financial = c(20, 50))
@@ -67,206 +64,188 @@ tasks <- tibble(
   ungroup() %>%
   mutate(duration_hours = duration_min / 60)
 
-# ---- 6. Sanity check: is this even feasible? ----
+# Quick feasibility check before solving anything
 cat("Total available capacity:", sum(employees$available_hours), "hours\n")
 cat("Total task workload:     ", round(sum(tasks$duration_hours), 1), "hours\n")
-
 tasks %>% count(type) %>% print()
 
-# ---- 7. Save for use in both R and Python ----
-dir.create("Desktop/secrets/data", showWarnings = FALSE)
-write_csv(employees, "projects/scenario_simulation/employees.csv")
-write_csv(eligibility, "projects/scenario_simulation/eligibility.csv")
-write_csv(preferences, "projects/scenario_simulation/preferences.csv")
-write_csv(tasks, "projects/scenario_simulation/tasks.csv")
+dir.create("data", showWarnings = FALSE)
+write_csv(employees,   "data/employees.csv")
+write_csv(eligibility, "data/eligibility.csv")
+write_csv(preferences, "data/preferences.csv")
+write_csv(tasks,       "data/tasks.csv")
 
-# ---- 6. Scenario multiplier ----
+# Scenario multiplier lets you stress-test the model later (e.g. 1.3 = a 30% busier week)
 scenario_multiplier <- 1.0
 tasks_scenario <- tasks %>%
   mutate(duration_hours = duration_hours * scenario_multiplier)
 
-# ---- 7. Build indices ----
-employee_index <- tibble(
-  employee_id = employees$employee_id,
-  e = seq_along(employees$employee_id)
-)
+# Integer indices for the solver (ompr works on e/t indices, not IDs directly)
+employee_index <- tibble(employee_id = employees$employee_id, e = seq_along(employees$employee_id))
+task_index     <- tibble(task_id = tasks_scenario$task_id, t = seq_along(tasks_scenario$task_id))
 
-task_index <- tibble(
-  task_id = tasks_scenario$task_id,
-  t = seq_along(tasks_scenario$task_id)
-)
-
-# ---- 8. FULL FEASIBILITY GRID (robust, no suffix issues) ----
+# Build the full employee x task grid with feasibility and preference flags
 feasible <- expand_grid(
   employee_id = employees$employee_id,
   task_id     = tasks_scenario$task_id
 ) %>%
   left_join(employee_index, by = "employee_id") %>%
   left_join(task_index,     by = "task_id") %>%
-  left_join(tasks_scenario %>% 
-              select(task_id, task_type = type, duration_hours),
-            by = "task_id") %>%
+  left_join(tasks_scenario %>% select(task_id, task_type = type, duration_hours), by = "task_id") %>%
   mutate(
     feasible = ifelse(
-      paste(employee_id, task_type) %in%
-        paste(eligibility$employee_id, eligibility$task_type),
+      paste(employee_id, task_type) %in% paste(eligibility$employee_id, eligibility$task_type),
       1, 0
     ),
     pref = ifelse(
-      paste(employee_id, task_type) %in%
-        paste(preferences$employee_id, preferences$task_type_preferred),
+      paste(employee_id, task_type) %in% paste(preferences$employee_id, preferences$task_type_preferred),
       1, 0
     )
   ) %>%
   arrange(e, t) %>%
   select(e, t, feasible, pref, duration_hours)
 
-# ---- 9. Convert to matrices ----
-nE <- length(employee_index$e)
-nT <- length(task_index$t)
+nE <- nrow(employee_index)
+nT <- nrow(task_index)
 
 duration_mat <- matrix(feasible$duration_hours, nrow = nE, ncol = nT, byrow = TRUE)
 feasible_mat <- matrix(feasible$feasible,       nrow = nE, ncol = nT, byrow = TRUE)
 pref_mat     <- matrix(feasible$pref,           nrow = nE, ncol = nT, byrow = TRUE)
 
-# ---- 10. Optimization model ----
-balance_weight <- 0.1
-
-model <- MIPModel() %>%
-  # Creates a binary variable for every employee–task pair.
+# --- Version 1: maximize preference matches, ignore balance ---
+model_preference <- MIPModel() %>%
   add_variable(x[e, t], e = 1:nE, t = 1:nT, type = "binary") %>%
-
-  # The solver tries to assign tasks to preferred employees where possible
   set_objective(sum_expr(pref_mat[e, t] * x[e, t], e = 1:nE, t = 1:nT), "max") %>%
-
-  # For each task t, exactly one employee must be chosen.
   add_constraint(sum_expr(x[e, t], e = 1:nE) == 1, t = 1:nT) %>%
-  
-  # This prevents assigning tasks to employees who cannot perform them.
   add_constraint(x[e, t] <= feasible_mat[e, t], e = 1:nE, t = 1:nT) %>%
-  
-  # This enforces workload limits (workload <= available hours)
   add_constraint(
     sum_expr(duration_mat[e, t] * x[e, t], t = 1:nT) <= employees$available_hours[e],
     e = 1:nE
   )
 
-# ---- 11. Solve ----
-result <- solve_model(
-  model,
-  with_ROI(solver = "glpk", glpk_ctrl = list(tm_lim = 120000))
+result_preference <- result <- solve_model(
+  model_preference,
+  with_ROI(solver = "glpk", tm_limit = 120000, verbose = TRUE, mip_gap = 0.02)
 )
 
-solution <- get_solution(result, x[e, t]) %>%
+solution_preference <- get_solution(result_preference, x[e, t]) %>%
   filter(value > 0.5) %>%
+  left_join(feasible %>% select(e, t, pref), by = c("e", "t")) %>%
   left_join(employee_index, by = "e") %>%
   left_join(task_index,     by = "t") %>%
-  left_join(tasks_scenario, by = "task_id")
+  left_join(tasks_scenario, by = "task_id") %>%
+  mutate(model = "Preference-maximizing")
 
-solution
-
-# ---- 7. Optimisation model with min–max fairness ----
-model <- MIPModel() %>%
-  
-  # Decision variables: assignment
+# --- Version 2: minimize the maximum workload across employees, ignore preference ---
+model_fairness <- MIPModel() %>%
   add_variable(x[e, t], e = 1:nE, t = 1:nT, type = "binary") %>%
-  
-  # New variable: maximum workload across all employees
   add_variable(L, type = "continuous", lb = 0) %>%
-  
-  # Objective: minimise the maximum workload (L)
   set_objective(L, "min") %>%
-  
-  # Each task must be assigned exactly once
   add_constraint(sum_expr(x[e, t], e = 1:nE) == 1, t = 1:nT) %>%
-  
-  # Only assign feasible tasks
   add_constraint(x[e, t] <= feasible_mat[e, t], e = 1:nE, t = 1:nT) %>%
-  
-  # Workload definition: workload of each employee must be ≤ L
-  add_constraint(
-    sum_expr(duration_mat[e, t] * x[e, t], t = 1:nT) <= L,
-    e = 1:nE
-  ) %>%
-  
-  # Capacity constraint: cannot exceed available hours
+  add_constraint(sum_expr(duration_mat[e, t] * x[e, t], t = 1:nT) <= L, e = 1:nE) %>%
   add_constraint(
     sum_expr(duration_mat[e, t] * x[e, t], t = 1:nT) <= employees$available_hours[e],
     e = 1:nE
   )
 
-  # ---- 11. Solve ----
-result <- solve_model(
-  model,
-  with_ROI(solver = "glpk", glpk_ctrl = list(tm_lim = 120000))
+result_fairness <- solve_model(
+  model_fairness,
+  with_ROI(solver = "glpk", tm_limit = 120000, verbose = TRUE, mip_gap = 0.02)
 )
 
-solution <- get_solution(result, x[e, t]) %>%
+solution_fairness <- get_solution(result_fairness, x[e, t]) %>%
   filter(value > 0.5) %>%
+  left_join(feasible %>% select(e, t, pref), by = c("e", "t")) %>%
   left_join(employee_index, by = "e") %>%
   left_join(task_index,     by = "t") %>%
-  left_join(tasks_scenario, by = "task_id")
+  left_join(tasks_scenario, by = "task_id") %>%
+  mutate(model = "Fairness (min-max)")
 
-solution
+# ---- Comparison chart 1: workload composition per employee, faceted by model ----
+all_solutions <- bind_rows(solution_preference, solution_fairness)
 
-
-# ---- 8. Build workload dataset for stacked bar chart ----
-assigned_workload <- solution %>%
-  group_by(employee_id) %>%
+assigned_workload <- all_solutions %>%
+  group_by(model, employee_id) %>%
   summarise(assigned_task_hours = sum(duration_hours), .groups = "drop")
 
 workload_plot_data <- employees %>%
-  left_join(assigned_workload, by = "employee_id") %>%
-  mutate(
-    assigned_hours = replace_na(assigned_task_hours, 0),
-    training_hours = training_hours,
-    meeting_hours  = meeting_overhead,
-    research_hours = research_hours
-  ) %>%
-  select(employee_id, assigned_task_hours, training_hours, meeting_hours, research_hours, available_hours) %>%
+  select(employee_id, training_hours, meeting_overhead, research_hours, available_hours) %>%
+  cross_join(tibble(model = c("Preference-maximizing", "Fairness (min-max)"))) %>%
+  left_join(assigned_workload, by = c("employee_id", "model")) %>%
+  mutate(assigned_task_hours = replace_na(assigned_task_hours, 0)) %>%
+  rename(meeting_hours = meeting_overhead) %>%
   pivot_longer(
     cols = c(assigned_task_hours, training_hours, meeting_hours, research_hours),
     names_to = "component",
     values_to = "hours"
-  )
+  ) %>%
+  mutate(component = recode(component,
+    assigned_task_hours = "Assigned Workload",
+    training_hours      = "Training",
+    meeting_hours        = "Meetings",
+    research_hours       = "Research"
+  ))
 
-# ---- 9. Stacked bar chart ----
-ggplot(
-  workload_plot_data %>%
-    mutate(
-      component = recode(
-        component,
-        assigned_hours = "Assigned Workload",
-        training_hours = "Training",
-        meeting_hours  = "Meetings",
-        research_hours = "Research"
-      )
-    ),
-  aes(x = employee_id, y = hours, fill = component)
-) +
-  geom_bar(stat = "identity") +
-  geom_point(
-    aes(y = available_hours),
-    color = "red",
-    size = 3
-  ) +
+component_colors <- c(
+  "Assigned Workload" = "#2C7FB8",
+  "Training"           = "#7FCDBB",
+  "Meetings"           = "#FEB24C",
+  "Research"           = "#F03B20"
+)
+
+ggplot(workload_plot_data, aes(x = employee_id, y = hours, fill = component)) +
+  geom_col(width = 0.7) +
+  geom_point(aes(y = available_hours), color = "grey20", size = 2.2) +
   geom_segment(
     aes(
-      x = as.numeric(factor(employee_id)) - 0.4,
-      xend = as.numeric(factor(employee_id)) + 0.4,
-      y = available_hours,
-      yend = available_hours
+      x = as.numeric(factor(employee_id)) - 0.35,
+      xend = as.numeric(factor(employee_id)) + 0.35,
+      y = available_hours, yend = available_hours
     ),
-    color = "red",
-    linetype = "dashed"
+    color = "grey20", linetype = "dashed", linewidth = 0.4
   ) +
+  facet_wrap(~model, ncol = 1) +
+  scale_fill_manual(values = component_colors) +
   labs(
     title = "Employee Workload vs Available Hours",
-    subtitle = "Assigned workload + training + meetings + research vs capacity",
-    x = "Employee",
-    y = "Hours",
-    fill = "Workload Component"
+    subtitle = "Dashed line marks each employee's available capacity",
+    x = NULL, y = "Hours", fill = NULL
   ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(face = "bold"),
+    panel.grid.minor = element_blank(),
+    legend.position = "bottom"
+  )
 
+# ---- Comparison chart 2: what each model actually traded off ----
+model_summary <- all_solutions %>%
+  group_by(model) %>%
+  summarise(
+    preference_satisfaction = mean(pref, na.rm = TRUE),
+    workload_imbalance_hrs  = {
+      hrs <- assigned_workload %>% filter(model == first(model)) %>% pull(assigned_task_hours)
+      max(hrs) - min(hrs)
+    },
+    .groups = "drop"
+  ) %>%
+  pivot_longer(cols = c(preference_satisfaction, workload_imbalance_hrs),
+               names_to = "metric", values_to = "value") %>%
+  mutate(metric = recode(metric,
+    preference_satisfaction = "Preference Satisfaction Rate",
+    workload_imbalance_hrs  = "Workload Imbalance (max - min hrs)"
+  ))
+
+ggplot(model_summary, aes(x = model, y = value, fill = model)) +
+  geom_col(width = 0.6) +
+  facet_wrap(~metric, scales = "free_y") +
+  scale_fill_manual(values = c("Preference-maximizing" = "#2C7FB8", "Fairness (min-max)" = "#F03B20")) +
+  labs(
+    title = "Trade-off Between the Two Model Versions",
+    subtitle = "Maximizing preference matches comes at the cost of balance, and vice versa",
+    x = NULL, y = NULL
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "none", strip.text = element_text(face = "bold"))
