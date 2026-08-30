@@ -1,0 +1,11 @@
+employee_id,type,base_hours,meeting_overhead,training_hours,research_hours,available_hours
+E1,Academic Advisor,35,4,6,0,25
+E2,Academic Advisor,35,4,0,0,31
+E3,Academic Advisor,35,4,0,8,23
+E4,IT Support,35,4,0,0,31
+E5,IT Support,35,4,5,0,26
+E6,IT Support,35,4,0,0,31
+E7,Financial Aid,35,4,0,6,25
+E8,Financial Aid,35,4,0,0,31
+E9,Financial Aid,35,4,4,0,27
+E10,Senior Generalist,35,4,0,0,31
