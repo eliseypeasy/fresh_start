@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trends in sterfte en levensverwachting, Nederland 1950-2024 (eigen analyse)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1F2A44;
+  --paper: #FAF8F3;
+  --paper-raised: #FFFFFF;
+  --grid: #E4E0D6;
+  --gold: #B8862B;
+  --teal: #3E7C8C;
+  --wine: #8C3B4A;
+  --muted: #6B6759;
+  --serif: Lora, Georgia, serif;
+  --sans: IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
+  --content-width: 700px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.toc {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 48px 20px 48px 32px;
+  border-right: 1px solid var(--grid);
+}
+
+.toc-label {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: chapter; }
+.toc li { counter-increment: chapter; margin-bottom: 4px; }
+.toc a {
+  display: flex;
+  gap: 10px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 13.5px;
+  padding: 6px 8px;
+  border-radius: 3px;
+}
+.toc a::before {
+  content: counter(chapter);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  width: 14px;
+  flex-shrink: 0;
+}
+.toc a:hover { background: var(--grid); }
+
+.main { padding: 0 32px 96px; min-width: 0; }
+
+.hero {
+  max-width: var(--content-width);
+  padding: 72px 0 40px;
+}
+.hero .eyebrow {
+  color: var(--teal);
+  font-size: 13.5px;
+  margin: 0 0 14px;
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-size: 42px;
+  line-height: 1.15;
+  margin: 0 0 18px;
+  font-weight: 600;
+}
+.hero p.lede {
+  font-size: 18px;
+  color: #3A3729;
+  max-width: 60ch;
+  margin: 0 0 22px;
+}
+.hero .meta {
+  font-size: 13px;
+  color: var(--muted);
+  border-top: 1px solid var(--grid);
+  padding-top: 16px;
+  max-width: 60ch;
+}
+
+section.chapter {
+  max-width: var(--content-width);
+  padding: 48px 0;
+  border-top: 1px solid var(--grid);
+}
+section.chapter:first-of-type { border-top: none; }
+
+section.chapter h2 {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 600;
+  margin: 0 0 18px;
+}
+section.chapter h3 {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--teal);
+  margin: 32px 0 4px;
+}
+section.chapter p { margin: 0 0 16px; font-size: 15.5px; }
+section.chapter .caption {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.stat-row {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin: 8px 0 28px;
+}
+.stat {
+  background: var(--paper-raised);
+  border: 1px solid var(--grid);
+  border-radius: 4px;
+  padding: 14px 18px;
+  min-width: 150px;
+}
+.stat .num {
+  font-family: var(--serif);
+  font-size: 26px;
+  display: block;
+  line-height: 1.1;
+}
+.stat .label { font-size: 12px; color: var(--muted); }
+
+.chart-frame {
+  background: var(--paper-raised);
+  border: 1px solid var(--grid);
+  border-radius: 4px;
+  padding: 18px 18px 6px;
+  margin: 20px 0 8px;
+  overflow-x: auto;
+}
+
+.callout {
+  border-left: 3px solid var(--gold);
+  background: rgba(184, 134, 43, 0.07);
+  padding: 14px 18px;
+  font-size: 14.5px;
+  margin: 20px 0;
+}
+.callout strong { color: var(--gold); }
+
+.callout.own {
+  border-left-color: var(--wine);
+  background: rgba(140, 59, 74, 0.06);
+}
+.callout.own strong { color: var(--wine); }
+
+footer {
+  max-width: var(--content-width);
+  padding: 48px 0 96px;
+  border-top: 1px solid var(--grid);
+  font-size: 13px;
+  color: var(--muted);
+}
+footer a { color: var(--teal); }
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+  .toc { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--grid); }
+  .hero h1 { font-size: 32px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="toc">
+    <div class="toc-label">Inhoud</div>
+    <ol><li><a href="#inleiding">Inleiding</a></li>
+<li><a href="#overledenen">Aantal overledenen</a></li>
+<li><a href="#leeftijd">Leeftijdsopbouw</a></li>
+<li><a href="#levensverwachting">Levensverwachting</a></li>
+<li><a href="#eu">Nederland in Europa</a></li>
+<li><a href="#gestandaardiseerd">Gestandaardiseerde sterfte</a></li>
+<li><a href="#scenario">Scenario: zonder de pandemie</a></li>
+<li><a href="#methode">Methode en bronnen</a></li></ol>
+  </nav>
+
+  <main class="main">
+
+    <div class="hero">
+      <p class="eyebrow">Eigen analyse &middot; op basis van CBS-open data</p>
+      <h1>Trends in sterfte en levensverwachting, Nederland 1950&ndash;2024</h1>
+      <p class="lede">
+        Een verkenning van hoe lang mensen in Nederland leven, hoeveel mensen
+        er jaarlijks overlijden, en wat de coronapandemie daarin structureel
+        heeft veranderd &mdash; inclusief een eigen scenario voor wat de
+        sterfte had kunnen zijn zonder de pandemie.
+      </p>
+      <p class="meta">
+        Gepubliceerd 6 September 2026 &middot; cijfers: CBS &middot;
+        dit is een oefenanalyse ter voorbereiding van een sollicitatie, geen
+        officiele CBS-publicatie.
+      </p>
+    </div>
+
+    <section class="chapter" id="inleiding">
+      <h2>Inleiding</h2>
+      <p>
+        In 2024 overleden er in Nederland
+        172 duizend mensen, ongeveer
+        2530 meer dan een jaar eerder.
+        Dat aantal stijgt al decennia, vooral doordat de bevolking groeit en
+        vergrijst. Om te zien of Nederlanders ook echt "meer" of "minder"
+        sterven, moet je corrigeren voor die groei en vergrijzing &mdash; dat
+        heet standaardiseren, en het is de rode draad van dit rapport.
+      </p>
+      <p>
+        Dit rapport gebruikt cijfers zoals gepubliceerd door het CBS. De
+        analyse en de duiding zijn van mij; aan het eind van het rapport
+        (hoofdstuk "Scenario") voeg ik een eigen tegenfeitelijke analyse toe
+        die niet van het CBS afkomstig is.
+      </p>
+      <div class="stat-row">
+        <div class="stat"><span class="num">80.5 jr</span><span class="label">levensverwachting mannen, 2024</span></div>
+        <div class="stat"><span class="num">83.3 jr</span><span class="label">levensverwachting vrouwen, 2024</span></div>
+        <div class="stat"><span class="num">172k</span><span class="label">overledenen in 2024</span></div>
+      </div>
+    </section>
+
+    <section class="chapter" id="overledenen">
+      <h2>Aantal overledenen</h2>
+      <p>
+        Het absolute aantal overledenen zegt op zichzelf weinig: een grotere,
+        oudere bevolking levert vanzelf meer sterfgevallen op. Zet je het
+        aantal af tegen de bevolkingsomvang (relatief), dan is de stijging
+        al veel vlakker. Corrigeer je ook voor de veranderende leeftijdsopbouw
+        (gestandaardiseerd), dan zie je een dalende trend &mdash; ondanks de
+        stijgende absolute cijfers. Gebruik de knoppen boven de grafiek om
+        tussen de drie weergaven te wisselen.
+      </p>
+      <div class="chart-frame"><div style="height:100%; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-4.0.0.min.js" integrity="sha256-FEYfO0yRyLtZCpnW0Dw/0DHKQO7Afrq3ml4+rBB818o=" crossorigin="anonymous"></script>                <div id="3a8b7cc5-d444-423f-ae4f-47457f7c860f" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("3a8b7cc5-d444-423f-ae4f-47457f7c860f")) {                    Plotly.newPlot(                        "3a8b7cc5-d444-423f-ae4f-47457f7c860f",                        [{"hovertemplate":"%{x}: %{y:.2f} (x 10.000)\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#1F2A44","width":2.5},"name":"Absoluut (x 10.000)","visible":true,"x":{"dtype":"i2","bdata":"ngefB6AHoQeiB6MHpAelB6YHpweoB6kHqgerB6wHrQeuB68HsAexB7IHswe0B7UHtge3B7gHuQe6B7sHvAe9B74HvwfAB8EHwgfDB8QHxQfGB8cHyAfJB8oHywfMB80HzgfPB9AH0QfSB9MH1AfVB9YH1wfYB9kH2gfbB9wH3QfeB98H4AfhB+IH4wfkB+UH5gfnB+gH"},"y":{"dtype":"f8","bdata":"rBxaZDtfHkCgGi\u002fdJAYfQArXo3A9ih5ArkfhehQuIEAMAiuHFtkfQGQ730+NVyBAg8DKoUX2IEBkO99PjZcgQNnO91Pj5SBAEFg5tMg2IUA3iUFg5ZAhQESLbOf7qSFAJQaBlUPLIkBMN4lBYCUjQOOlm8QgsCJAQmDl0CKbI0C0yHa+nxokQGiR7Xw\u002f9SNAc2iR7Xz\u002fJECgGi\u002fdJIYlQAaBlUOL7CVAPzVeukkMJkCe76fGS7cmQIlBYOXQIiZAmpmZmZnZJUBzaJHtfL8mQKRwPQrX4yZA+FPjpZsEJkD8qfHSTeImQN0kBoGVgyZAQmDl0CLbJkC0yHa+nxonQMHKoUW2cydAWmQ730+NJ0CDwMqhRfYnQArXo3A9iihAHVpkO98PKUBxPQrXo3AoQKJFtvP91ChA1XjpJjHIKUDdJAaBlcMpQMuhRbbz\u002fSlA7nw\u002fNV76KUCPwvUoXI8rQIts5\u002fupsSpAiUFg5dAiK0BQjZduEoMrQA4tsp3vJytA5dAi2\u002fl+K0AMAiuHFhksQEJg5dAiGyxA+n5qvHQTLEBGtvP91HgsQBfZzvdTYyxAj8L1KFxPK0BI4XoUrkcrQG3n+6nxEitAtMh2vp+aKkC6SQwCKwcrQAwCK4cW2SpAg8DKoUU2K0DZzvdT4yUrQLbz\u002fdR4KSxAAAAAAABALEDy0k1iENgrQJMYBFYObS1AzczMzMzMLUCYbhKDwAouQHnpJjEIrC5AVOOlm8RgLkCR7Xw\u002fNd4wQEa28\u002f3UGDFAiUFg5dACMUDByqFFtvMwQBSuR+F6NDFA"},"type":"scatter"},{"hovertemplate":"%{x}: %{y:.1f} per 1.000\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#3E7C8C","width":2.5},"name":"Relatief (per 1.000 inwoners)","visible":false,"x":{"dtype":"i2","bdata":"ngefB6AHoQeiB6MHpAelB6YHpweoB6kHqgerB6wHrQeuB68HsAexB7IHswe0B7UHtge3B7gHuQe6B7sHvAe9B74HvwfAB8EHwgfDB8QHxQfGB8cHyAfJB8oHywfMB80HzgfPB9AH0QfSB9MH1AfVB9YH1wfYB9kH2gfbB9wH3QfeB98H4AfhB+IH4wfkB+UH5gfnB+gH"},"y":{"dtype":"f8","bdata":"AAAAAAAAHkBmZmZmZmYeQJqZmZmZmR1AzczMzMzMHkAAAAAAAAAeQGZmZmZmZh5AMzMzMzMzH0AAAAAAAAAeQGZmZmZmZh5AZmZmZmZmHkBmZmZmZmYeQGZmZmZmZh5AAAAAAAAAIEAAAAAAAAAgQM3MzMzMzB5AAAAAAAAAIEAzMzMzMzMgQJqZmZmZmR9AZmZmZmZmIEDNzMzMzMwgQM3MzMzMzCBAzczMzMzMIEAAAAAAAAAhQGZmZmZmZiBAMzMzMzMzIECamZmZmZkgQJqZmZmZmSBAmpmZmZmZH0BmZmZmZmYgQAAAAAAAACBAMzMzMzMzIEAzMzMzMzMgQGZmZmZmZiBAZmZmZmZmIECamZmZmZkgQAAAAAAAACFAMzMzMzMzIUCamZmZmZkgQM3MzMzMzCBAZmZmZmZmIUAzMzMzMzMhQDMzMzMzMyFAMzMzMzMzIUAAAAAAAAAiQGZmZmZmZiFAmpmZmZmZIUDNzMzMzMwhQGZmZmZmZiFAmpmZmZmZIUDNzMzMzMwhQJqZmZmZmSFAZmZmZmZmIUCamZmZmZkhQGZmZmZmZiFAzczMzMzMIEDNzMzMzMwgQJqZmZmZmSBAMzMzMzMzIEBmZmZmZmYgQDMzMzMzMyBAZmZmZmZmIEAzMzMzMzMgQM3MzMzMzCBAzczMzMzMIECamZmZmZkgQGZmZmZmZiFAZmZmZmZmIUCamZmZmZkhQM3MzMzMzCFAmpmZmZmZIUBmZmZmZmYjQJqZmZmZmSNAMzMzMzMzI0AAAAAAAAAjQDMzMzMzMyNA"},"type":"scatter"},{"hovertemplate":"%{x}: %{y:.1f} per 1.000\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#B8862B","width":2.5},"name":"Gestandaardiseerd (naar bevolking 1990)","visible":false,"x":{"dtype":"i2","bdata":"ngefB6AHoQeiB6MHpAelB6YHpweoB6kHqgerB6wHrQeuB68HsAexB7IHswe0B7UHtge3B7gHuQe6B7sHvAe9B74HvwfAB8EHwgfDB8QHxQfGB8cHyAfJB8oHywfMB80HzgfPB9AH0QfSB9MH1AfVB9YH1wfYB9kH2gfbB9wH3QfeB98H4AfhB+IH4wfkB+UH5gfnB+gH"},"y":{"dtype":"f8","bdata":"ZmZmZmZmKkAzMzMzMzMqQAAAAAAAAClAzczMzMzMKUDNzMzMzMwoQM3MzMzMzChAAAAAAAAAKUDNzMzMzMwnQJqZmZmZmSdAZmZmZmZmJ0AzMzMzMzMnQJqZmZmZmSZAZmZmZmZmJ0BmZmZmZmYnQDMzMzMzMyZAzczMzMzMJkDNzMzMzMwmQAAAAAAAACZAmpmZmZmZJkCamZmZmZkmQJqZmZmZmSZAMzMzMzMzJkCamZmZmZkmQJqZmZmZmSVAzczMzMzMJEAzMzMzMzMlQM3MzMzMzCRAmpmZmZmZI0DNzMzMzMwjQAAAAAAAACNAzczMzMzMIkBmZmZmZmYiQGZmZmZmZiJAMzMzMzMzIkAAAAAAAAAiQAAAAAAAACJAMzMzMzMzIkBmZmZmZmYhQDMzMzMzMyFAmpmZmZmZIUAzMzMzMzMhQAAAAAAAACFAzczMzMzMIECamZmZmZkhQM3MzMzMzCBAzczMzMzMIEDNzMzMzMwgQDMzMzMzMyBAMzMzMzMzIEAzMzMzMzMgQAAAAAAAACBAmpmZmZmZH0CamZmZmZkfQM3MzMzMzB5AMzMzMzMzHUDNzMzMzMwcQAAAAAAAABxAzczMzMzMGkBmZmZmZmYaQJqZmZmZmRlAmpmZmZmZGUDNzMzMzMwYQDMzMzMzMxlAZmZmZmZmGECamZmZmZkXQGZmZmZmZhhAAAAAAAAAGECamZmZmZkXQJqZmZmZmRdAzczMzMzMFkDNzMzMzMwYQM3MzMzMzBhAZmZmZmZmGECamZmZmZkXQM3MzMzMzBhA"},"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"updatemenus":[{"bgcolor":"#FAF8F3","bordercolor":"#E4E0D6","buttons":[{"args":[{"visible":[true,false,false]}],"label":"Absoluut","method":"update"},{"args":[{"visible":[false,true,false]}],"label":"Relatief","method":"update"},{"args":[{"visible":[false,false,true]}],"label":"Gestandaardiseerd","method":"update"}],"direction":"right","font":{"size":12},"showactive":true,"type":"buttons","x":0,"xanchor":"left","y":1.18}],"showlegend":false,"font":{"family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":13,"color":"#1F2A44"},"margin":{"l":56,"r":24,"t":24,"b":44},"hoverlabel":{"font":{"color":"#FAF8F3","family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":12},"bgcolor":"#1F2A44","bordercolor":"#1F2A44"},"legend":{"font":{"size":12},"orientation":"h","yanchor":"bottom","y":1.02,"xanchor":"left","x":0},"xaxis":{"showgrid":false,"showline":true,"linecolor":"#E4E0D6","ticks":"outside","tickcolor":"#E4E0D6","zeroline":false},"yaxis":{"showgrid":true,"gridcolor":"#E4E0D6","zeroline":false,"ticks":"","title":{"text":"Aantal overledenen"}},"paper_bgcolor":"#FAF8F3","plot_bgcolor":"#FAF8F3"},                        {"displayModeBar": false, "responsive": true}                    )                };            </script>        </div></div>
+      <p class="caption">Bron: CBS, Trends in sterfte en doodsoorzaken 2014&ndash;2024, tabel 3.5.</p>
+    </section>
+
+    <section class="chapter" id="leeftijd">
+      <h2>Leeftijdsopbouw van de overledenen</h2>
+      <p>
+        Van alle mensen die in 2024 overleden was het
+        overgrote deel 80 jaar of ouder. Dat aandeel is de afgelopen dertig
+        jaar gestaag gegroeid, terwijl het aandeel overledenen onder de 65
+        juist is gekrompen &mdash; een direct gevolg van de vergrijzing en van
+        betere overlevingskansen op middelbare leeftijd.
+      </p>
+      <div class="chart-frame"><div style="height:100%; width:100%;">                            <div id="22f24599-894f-4022-9f59-26ff3f09d3e5" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("22f24599-894f-4022-9f59-26ff3f09d3e5")) {                    Plotly.newPlot(                        "22f24599-894f-4022-9f59-26ff3f09d3e5",                        [{"fillcolor":"#1F2A44","hovertemplate":"%{x}: %{y:.1f}%%\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#1F2A44","width":0.5},"name":"0 tot 65 jaar","stackgroup":"one","x":{"dtype":"i2","bdata":"ywfMB80HzgfPB9AH0QfSB9MH1AfVB9YH1wfYB9kH2gfbB9wH3QfeB98H4AfhB+IH4wfkB+UH5gfnB+gH"},"y":{"dtype":"f8","bdata":"tJK+6F5MM0CABOKGyS4zQPLU\u002fdE08DJAC8BQKSLvMkBxU86jTecyQFgCl+76ATNA2WRc2Cf\u002fMkBC12TXe+UyQEaOEjsX7TJAf8kP42sUM0Bl++uMcY0yQLTDUImNczJARTaDSs9gMkDuZqL3dVoyQF2Gq8RxOzJAjggLfIHjMUD7\u002fFRY52QxQJ9tWADKnTBA42jaU1MdMEDx\u002f8bASN4vQH42S65HFy5AJjQWgYHqLUA0kF8JVuIsQGdPK4JxICxAiyit9SCRK0D3cyxJl7UpQA7j5mZ1gipA9i+3mYLaKUC+X2V3eS4pQOWVSitjnShA"},"type":"scatter"},{"fillcolor":"#3E7C8C","hovertemplate":"%{x}: %{y:.1f}%%\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#3E7C8C","width":0.5},"name":"65 tot 80 jaar","stackgroup":"one","x":{"dtype":"i2","bdata":"ywfMB80HzgfPB9AH0QfSB9MH1AfVB9YH1wfYB9kH2gfbB9wH3QfeB98H4AfhB+IH4wfkB+UH5gfnB+gH"},"y":{"dtype":"f8","bdata":"pqJYs0KeQUBs6K3PNJZBQJWZ\u002fZ5RfEFAgm7rNmFoQUCFOHFdx1dBQCH1vgfc7kBAMIBM2+TDQECKelxFEnBAQJjzoczrA0BAa\u002fs28EPJP0BihYlrf3Y\u002fQIKbho+WwD5AA0rcYSGxPkBhWLJ+Kr09QMbe4znXyz1Am5SWBa+6PUAeT9\u002fte5A9QJnTzMN8YT1Auoa1qYF8PUBJJD9rzas9QFqifsdRrT1ANKEZv+jFPUAjBTS2EJM9QNSbY11X+j1AAJG6Fh8\u002fPkBGPcLYf2M+QPr7X0ryVj9A7uzSCV0lP0CEN0aPdTk\u002fQItKVVL+9z5A"},"type":"scatter"},{"fillcolor":"#B8862B","hovertemplate":"%{x}: %{y:.1f}%%\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#B8862B","width":0.5},"name":"80 jaar of ouder","stackgroup":"one","x":{"dtype":"i2","bdata":"ywfMB80HzgfPB9AH0QfSB9MH1AfVB9YH1wfYB9kH2gfbB9wH3QfeB98H4AfhB+IH4wfkB+UH5gfnB+gH"},"y":{"dtype":"f8","bdata":"ABRI2I27RkBVFeFsZtJGQPB7A\u002fiTC0dAeTFstA0gR0DCnafQkTRHQLSJ9YAmkEdAY02FOIe8R0DWGfHOLx1IQEfF1JWIhUhAi51cFiiRSECfP8WDB\u002f5IQGNQlPPtZUlA3j\u002fQqQd3SUBWoNXEL\u002fRJQG1NuIBb\u002fElAbDEvv+cwSkD02eVcToVKQGVf7Z1cAEtAMQg4gRUzS0DfrS4ahzJLQDThrTCFo0tAW6ItQGuiS0BhGY4i4v1LQDxew\u002fC3+ktAXm03Nyj8S0BgxFNB2mBMQEBJFoHps0tAi72o1LD2S0BNjIPaphdMQEG1AgyoXExA"},"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"font":{"family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":13,"color":"#1F2A44"},"margin":{"l":56,"r":24,"t":24,"b":44},"hoverlabel":{"font":{"color":"#FAF8F3","family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":12},"bgcolor":"#1F2A44","bordercolor":"#1F2A44"},"legend":{"font":{"size":12},"orientation":"h","yanchor":"bottom","y":1.02,"xanchor":"left","x":0},"xaxis":{"showgrid":false,"showline":true,"linecolor":"#E4E0D6","ticks":"outside","tickcolor":"#E4E0D6","zeroline":false},"yaxis":{"showgrid":true,"gridcolor":"#E4E0D6","zeroline":false,"ticks":"","title":{"text":"Aandeel van totaal aantal overledenen (%)"},"range":[0,100]},"paper_bgcolor":"#FAF8F3","plot_bgcolor":"#FAF8F3"},                        {"displayModeBar": false, "responsive": true}                    )                };            </script>        </div></div>
+      <p class="caption">Bron: CBS, tabel 3.2. Aandelen berekend als percentage van het totaal aantal overledenen per jaar.</p>
+    </section>
+
+    <section class="chapter" id="levensverwachting">
+      <h2>Levensverwachting</h2>
+      <p>
+        De levensverwachting bij geboorte laat zien hoe lang iemand
+        gemiddeld zou leven als de sterftekansen van dit jaar de rest van
+        zijn of haar leven zouden gelden. Voor mannen is dat cijfer in
+        2024 inmiddels iets hoger dan vlak voor de
+        pandemie (80.46 jaar in 2019); voor vrouwen
+        ligt het nog altijd iets lager dan in 2019
+        (83.56 jaar).
+      </p>
+      <div class="chart-frame"><div style="height:100%; width:100%;">                            <div id="4df25e0e-78e0-4d1f-8ae9-0c9b39724cf9" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("4df25e0e-78e0-4d1f-8ae9-0c9b39724cf9")) {                    Plotly.newPlot(                        "4df25e0e-78e0-4d1f-8ae9-0c9b39724cf9",                        [{"hovertemplate":"%{x}: %{y:.2f} jaar\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#3E7C8C","width":2.5},"name":"Mannen","x":{"dtype":"i2","bdata":"ywfMB80HzgfPB9AH0QfSB9MH1AfVB9YH1wfYB9kH2gfbB9wH3QfeB98H4AfhB+IH4wfkB+UH5gfnB+gH"},"y":{"dtype":"f8","bdata":"ZmZmZmamUkAK16NwPapSQArXo3A9ylJAXI\u002fC9SjMUkD2KFyPwtVSQMP1KFyP4lJAMzMzMzPzUkCPwvUoXP9SQI\u002fC9ShcD1NASOF6FK43U0Bcj8L1KExTQLgehetRaFNAcT0K16OAU0AUrkfhepRTQFK4HoXroVNA4XoUrkexU0DsUbgehctTQClcj8L1yFNACtejcD3aU0BI4XoUrvdTQB+F61G47lNAuB6F61H4U0CkcD0K1wNUQArXo3A9ClRAPQrXo3AdVEB7FK5H4epTQOxRuB6F61NAZmZmZmYGVECkcD0K1xNUQFK4HoXrIVRA"},"type":"scatter"},{"hovertemplate":"%{x}: %{y:.2f} jaar\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#8C3B4A","width":2.5},"name":"Vrouwen","x":{"dtype":"i2","bdata":"ywfMB80HzgfPB9AH0QfSB9MH1AfVB9YH1wfYB9kH2gfbB9wH3QfeB98H4AfhB+IH4wfkB+UH5gfnB+gH"},"y":{"dtype":"f8","bdata":"16NwPQoXVEBmZmZmZhZUQDMzMzMzI1RAXI\u002fC9SgsVEDNzMzMzBxUQIXrUbgeJVRAPQrXo3AtVEBcj8L1KCxUQOxRuB6FO1RAXI\u002fC9ShcVEBmZmZmZmZUQClcj8L1eFRApHA9CteTVEBSuB6F65FUQJqZmZmZqVRArkfhehSuVEBmZmZmZrZUQBSuR+F6tFRAw\u002fUoXI\u002fCVEDD9Shcj9JUQLgehetRyFRAuB6F61HIVEAUrkfhetRUQIXrUbge1VRApHA9CtfjVECF61G4HsVUQI\u002fC9Shcv1RA9ihcj8LFVECF61G4HtVUQFK4HoXr0VRA"},"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"font":{"family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":13,"color":"#1F2A44"},"margin":{"l":56,"r":24,"t":24,"b":44},"hoverlabel":{"font":{"color":"#FAF8F3","family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":12},"bgcolor":"#1F2A44","bordercolor":"#1F2A44"},"legend":{"font":{"size":12},"orientation":"h","yanchor":"bottom","y":1.02,"xanchor":"left","x":0},"xaxis":{"showgrid":false,"showline":true,"linecolor":"#E4E0D6","ticks":"outside","tickcolor":"#E4E0D6","zeroline":false},"yaxis":{"showgrid":true,"gridcolor":"#E4E0D6","zeroline":false,"ticks":"","title":{"text":"Levensverwachting bij geboorte (jaren)"}},"paper_bgcolor":"#FAF8F3","plot_bgcolor":"#FAF8F3"},                        {"displayModeBar": false, "responsive": true}                    )                };            </script>        </div></div>
+      <p class="caption">Bron: CBS, tabel 3.3.</p>
+    </section>
+
+    <section class="chapter" id="eu">
+      <h2>Nederland in Europa</h2>
+      <p>
+        Met een levensverwachting van 82,0 jaar in 2023 zit Nederland boven
+        het EU-gemiddelde van 81,5 jaar, maar duidelijk achter koplopers als
+        Spanje en Italie. De spreiding tussen EU-landen is groot: bijna tien
+        jaar verschil tussen de hoogste en de laagste waarde, wat vooral
+        samenhangt met verschillen in welvaart en toegang tot zorg.
+      </p>
+      <div class="chart-frame"><div style="height:620px; width:100%;">                            <div id="c2cf99ac-d410-476f-86a3-e316919af50a" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("c2cf99ac-d410-476f-86a3-e316919af50a")) {                    Plotly.newPlot(                        "c2cf99ac-d410-476f-86a3-e316919af50a",                        [{"hovertemplate":"%{y}: %{x:.1f} jaar\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":["#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#8C3B4A","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4"]},"orientation":"h","x":{"dtype":"f8","bdata":"MzMzMzPzUkCamZmZmflSQGZmZmZmJlNAmpmZmZk5U0AzMzMzM1NTQGZmZmZmhlNAZmZmZmamU0BmZmZmZqZTQDMzMzMzs1NAAAAAAAAAVEDNzMzMzExUQGZmZmZmZlRAZmZmZmZmVEDNzMzMzGxUQJqZmZmZeVRAAAAAAACAVEAAAAAAAIBUQJqZmZmZmVRAAAAAAACgVEAAAAAAAKBUQGZmZmZmplRAZmZmZmbGVECamZmZmdlUQJqZmZmZ2VRAZmZmZmbmVEAzMzMzM\u002fNUQAAAAAAAAFVA"},"y":["Bulgarije","Letland","Roemenie","Hongarije","Litouwen","Slowakije","Kroatie","Polen","Estland","Tsjechie","Duitsland","Griekenland","Oostenrijk","Finland","Denemarken","Slovenie","Nederland","Portugal","Belgie","Cyprus","Ierland","Frankrijk","Zweden","Luxemburg","Malta","Italie","Spanje"],"type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"shapes":[{"line":{"color":"#6B6759","dash":"dot"},"type":"line","x0":81.5,"x1":81.5,"xref":"x","y0":0,"y1":1,"yref":"y domain"}],"annotations":[{"font":{"color":"#6B6759","size":11},"showarrow":false,"text":"EU-27 gemiddelde","x":81.5,"xanchor":"center","xref":"x","y":1,"yanchor":"bottom","yref":"y domain"}],"font":{"family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":13,"color":"#1F2A44"},"margin":{"l":110,"r":24,"t":24,"b":44},"hoverlabel":{"font":{"color":"#FAF8F3","family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":12},"bgcolor":"#1F2A44","bordercolor":"#1F2A44"},"legend":{"font":{"size":12},"orientation":"h","yanchor":"bottom","y":1.02,"xanchor":"left","x":0},"xaxis":{"showgrid":false,"showline":true,"linecolor":"#E4E0D6","ticks":"outside","tickcolor":"#E4E0D6","zeroline":false,"title":{"text":"Levensverwachting bij geboorte, 2023 (jaren)"}},"yaxis":{"showgrid":true,"gridcolor":"#E4E0D6","zeroline":false,"ticks":"","tickfont":{"size":11},"title":{"text":""}},"paper_bgcolor":"#FAF8F3","plot_bgcolor":"#FAF8F3","height":620},                        {"displayModeBar": false, "responsive": true}                    )                };            </script>        </div></div>
+      <p class="caption">Bron: CBS/Eurostat, tabel 3.4.</p>
+    </section>
+
+    <section class="chapter" id="gestandaardiseerd">
+      <h2>Gestandaardiseerde sterfte: het langetermijnbeeld</h2>
+      <p>
+        Gestandaardiseerd voor leeftijd en geslacht daalt de sterfte in
+        Nederland al sinds 1950 vrijwel continu &mdash; van 13,2 per duizend
+        in 1950 naar een dieptepunt van 5,7 per duizend in 2019. Sinds de
+        pandemie ligt dat cijfer structureel hoger en is het nog niet terug
+        op het niveau van 2019.
+      </p>
+      <div class="chart-frame"><div style="height:100%; width:100%;">                            <div id="382ee4f3-d36c-4a30-8e22-b6d66cc8d13c" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("382ee4f3-d36c-4a30-8e22-b6d66cc8d13c")) {                    Plotly.newPlot(                        "382ee4f3-d36c-4a30-8e22-b6d66cc8d13c",                        [{"hovertemplate":"%{x}: %{y:.1f} per 1.000\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#1F2A44","width":2.5},"marker":{"color":"#1F2A44","size":5},"mode":"lines+markers","showlegend":false,"x":{"dtype":"i2","bdata":"2gfbB9wH3QfeB98H4AfhB+IH4wfkB+UH5gfnB+gH"},"y":{"dtype":"f8","bdata":"mpmZmZmZGUDNzMzMzMwYQDMzMzMzMxlAZmZmZmZmGECamZmZmZkXQGZmZmZmZhhAAAAAAAAAGECamZmZmZkXQJqZmZmZmRdAzczMzMzMFkDNzMzMzMwYQM3MzMzMzBhAZmZmZmZmGECamZmZmZkXQM3MzMzMzBhA"},"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"annotations":[{"arrowcolor":"#B8862B","arrowhead":0,"ax":0,"ay":-38,"bgcolor":"#FAF8F3","bordercolor":"#B8862B","borderpad":3,"borderwidth":1,"font":{"color":"#B8862B","size":11},"showarrow":true,"text":"Griepepidemie","x":2015,"y":6.1},{"arrowcolor":"#B8862B","arrowhead":0,"ax":0,"ay":-38,"bgcolor":"#FAF8F3","bordercolor":"#B8862B","borderpad":3,"borderwidth":1,"font":{"color":"#B8862B","size":11},"showarrow":true,"text":"Lange griepepidemie","x":2018,"y":5.9},{"arrowcolor":"#8C3B4A","arrowhead":0,"ax":0,"ay":-38,"bgcolor":"#FAF8F3","bordercolor":"#8C3B4A","borderpad":3,"borderwidth":1,"font":{"color":"#8C3B4A","size":11},"showarrow":true,"text":"Start coronapandemie","x":2020,"y":6.2},{"arrowcolor":"#8C3B4A","arrowhead":0,"ax":0,"ay":-38,"bgcolor":"#FAF8F3","bordercolor":"#8C3B4A","borderpad":3,"borderwidth":1,"font":{"color":"#8C3B4A","size":11},"showarrow":true,"text":"Coronapandemie","x":2021,"y":6.2},{"arrowcolor":"#8C3B4A","arrowhead":0,"ax":0,"ay":-38,"bgcolor":"#FAF8F3","bordercolor":"#8C3B4A","borderpad":3,"borderwidth":1,"font":{"color":"#8C3B4A","size":11},"showarrow":true,"text":"Coronapandemie (afnemend)","x":2022,"y":6.1}],"font":{"family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":13,"color":"#1F2A44"},"margin":{"l":56,"r":24,"t":24,"b":44},"hoverlabel":{"font":{"color":"#FAF8F3","family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":12},"bgcolor":"#1F2A44","bordercolor":"#1F2A44"},"legend":{"font":{"size":12},"orientation":"h","yanchor":"bottom","y":1.02,"xanchor":"left","x":0},"xaxis":{"showgrid":false,"showline":true,"linecolor":"#E4E0D6","ticks":"outside","tickcolor":"#E4E0D6","zeroline":false},"yaxis":{"showgrid":true,"gridcolor":"#E4E0D6","zeroline":false,"ticks":"","title":{"text":"Gestandaardiseerde sterfte (per 1.000)"}},"paper_bgcolor":"#FAF8F3","plot_bgcolor":"#FAF8F3"},                        {"displayModeBar": false, "responsive": true}                    )                };            </script>        </div></div>
+      <p class="caption">Bron: CBS, tabel 3.5. Annotaties (griepepidemieen, coronapandemie) op basis van de duiding in dezelfde CBS-publicatie.</p>
+      <div class="callout">
+        <strong>Waarom standaardiseren?</strong> Zonder correctie voor
+        leeftijd zou een vergrijzende bevolking altijd een stijgende sterfte
+        laten zien, ook als niemand "sneller" doodgaat dan voorheen.
+        Standaardisatie rekent iedereen af tegen eenzelfde referentiebevolking
+        (hier: die van 1990), zodat je puur de verandering in sterftekansen
+        overhoudt.
+      </div>
+    </section>
+
+    <section class="chapter" id="scenario">
+      <h2>Scenario: zonder de pandemie</h2>
+      <p>
+        Dit hoofdstuk is mijn eigen toevoeging aan de CBS-cijfers. Ik heb een
+        eenvoudige lineaire trend gefit op de gestandaardiseerde sterfte in
+        de tien jaar voor de pandemie (2010&ndash;2019) en die trend
+        doorgetrokken naar 2020&ndash;2024. Dat geeft een
+        ruwe schatting van waar de sterfte had kunnen liggen als de
+        trendbreuk van de pandemie niet had plaatsgevonden.
+      </p>
+      <div class="chart-frame"><div style="height:100%; width:100%;">                            <div id="0b05a839-4be2-4b3b-bfb8-d3f99ca9baf4" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("0b05a839-4be2-4b3b-bfb8-d3f99ca9baf4")) {                    Plotly.newPlot(                        "0b05a839-4be2-4b3b-bfb8-d3f99ca9baf4",                        [{"hovertemplate":"%{x}: %{y:.2f} per 1.000 (werkelijk)\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#1F2A44","width":2.5},"name":"Werkelijk","x":{"dtype":"i2","bdata":"ngefB6AHoQeiB6MHpAelB6YHpweoB6kHqgerB6wHrQeuB68HsAexB7IHswe0B7UHtge3B7gHuQe6B7sHvAe9B74HvwfAB8EHwgfDB8QHxQfGB8cHyAfJB8oHywfMB80HzgfPB9AH0QfSB9MH1AfVB9YH1wfYB9kH2gfbB9wH3QfeB98H4AfhB+IH4wfkB+UH5gfnB+gH"},"y":{"dtype":"f8","bdata":"ZmZmZmZmKkAzMzMzMzMqQAAAAAAAAClAzczMzMzMKUDNzMzMzMwoQM3MzMzMzChAAAAAAAAAKUDNzMzMzMwnQJqZmZmZmSdAZmZmZmZmJ0AzMzMzMzMnQJqZmZmZmSZAZmZmZmZmJ0BmZmZmZmYnQDMzMzMzMyZAzczMzMzMJkDNzMzMzMwmQAAAAAAAACZAmpmZmZmZJkCamZmZmZkmQJqZmZmZmSZAMzMzMzMzJkCamZmZmZkmQJqZmZmZmSVAzczMzMzMJEAzMzMzMzMlQM3MzMzMzCRAmpmZmZmZI0DNzMzMzMwjQAAAAAAAACNAzczMzMzMIkBmZmZmZmYiQGZmZmZmZiJAMzMzMzMzIkAAAAAAAAAiQAAAAAAAACJAMzMzMzMzIkBmZmZmZmYhQDMzMzMzMyFAmpmZmZmZIUAzMzMzMzMhQAAAAAAAACFAzczMzMzMIECamZmZmZkhQM3MzMzMzCBAzczMzMzMIEDNzMzMzMwgQDMzMzMzMyBAMzMzMzMzIEAzMzMzMzMgQAAAAAAAACBAmpmZmZmZH0CamZmZmZkfQM3MzMzMzB5AMzMzMzMzHUDNzMzMzMwcQAAAAAAAABxAzczMzMzMGkBmZmZmZmYaQJqZmZmZmRlAmpmZmZmZGUDNzMzMzMwYQDMzMzMzMxlAZmZmZmZmGECamZmZmZkXQGZmZmZmZhhAAAAAAAAAGECamZmZmZkXQJqZmZmZmRdAzczMzMzMFkDNzMzMzMwYQM3MzMzMzBhAZmZmZmZmGECamZmZmZkXQM3MzMzMzBhA"},"type":"scatter"},{"hovertemplate":"%{x}: %{y:.2f} per 1.000 (scenario)\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#B8862B","dash":"dash","width":2},"mode":"lines","name":"Verwacht bij doorzetten trend 2010-2019","x":{"dtype":"i2","bdata":"ngefB6AHoQeiB6MHpAelB6YHpweoB6kHqgerB6wHrQeuB68HsAexB7IHswe0B7UHtge3B7gHuQe6B7sHvAe9B74HvwfAB8EHwgfDB8QHxQfGB8cHyAfJB8oHywfMB80HzgfPB9AH0QfSB9MH1AfVB9YH1wfYB9kH2gfbB9wH3QfeB98H4AfhB+IH4wfkB+UH5gfnB+gH"},"y":{"dtype":"f8","bdata":"0AnylCBPJECouuiiiy4kQIhr37D2DSRAaBzWvmHtI0BIzczMzMwjQCB+w9o3rCNAAC+66KKLI0Dg37D2DWsjQLiQpwR5SiNAmEGeEuQpI0B48pQgTwkjQFijiy666CJAMFSCPCXIIkAQBXlKkKciQPC1b1j7hiJAyGZmZmZmIkCoF1100UUiQIjIU4I8JSJAaHlKkKcEIkBAKkGeEuQhQCDbN6x9wyFAAIwuuuiiIUDYPCXIU4IhQLjtG9a+YSFAmJ4S5ClBIUB4TwnylCAhQFAAAAAAACFAMLH2DWvfIEAQYu0b1r4gQOgS5ClBniBAyMPaN6x9IECodNFFF10gQIglyFOCPCBAYNa+Ye0bIECADmvfsPYfQEBwWPuGtR9A8NFFF110H0CwMzMzMzMfQHCVIE8J8h5AMPcNa9+wHkDgWPuGtW8eQKC66KKLLh5AYBzWvmHtHUAgfsPaN6wdQNDfsPYNax1AkEGeEuQpHUBQo4suuugcQAAFeUqQpxxAwGZmZmZmHECAyFOCPCUcQEAqQZ4S5BtA8IsuuuiiG0Cw7RvWvmEbQHBPCfKUIBtAILH2DWvfGkDgEuQpQZ4aQKB00UUXXRpAYNa+Ye0bGkAQOKx9w9oZQNCZmZmZmRlAkPuGtW9YGUBAXXTRRRcZQAC\u002fYe0b1hhAwCBPCfKUGECAgjwlyFMYQEDkKUGeEhhAAEYXXXTRF0CgpwR5SpAXQGAJ8pQgTxdAIGvfsPYNF0DgzMzMzMwWQKAuuuiiixZAYJCnBHlKFkAg8pQgTwkWQMBTgjwlyBVA"},"type":"scatter"},{"fill":"toself","fillcolor":"rgba(140,59,74,0.12)","hoverinfo":"skip","line":{"color":"rgba(0,0,0,0)"},"showlegend":false,"x":[2019,2020,2021,2022,2023,2024,2024,2023,2022,2021,2020,2019],"y":[5.7,6.2,6.2,6.1,5.9,6.2,5.445454545454538,5.509090909090929,5.572727272727292,5.6363636363636545,5.700000000000017,5.76363636363638],"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"font":{"family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":13,"color":"#1F2A44"},"margin":{"l":56,"r":24,"t":24,"b":44},"hoverlabel":{"font":{"color":"#FAF8F3","family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":12},"bgcolor":"#1F2A44","bordercolor":"#1F2A44"},"legend":{"font":{"size":12},"orientation":"h","yanchor":"bottom","y":1.02,"xanchor":"left","x":0},"xaxis":{"showgrid":false,"showline":true,"linecolor":"#E4E0D6","ticks":"outside","tickcolor":"#E4E0D6","zeroline":false},"yaxis":{"showgrid":true,"gridcolor":"#E4E0D6","zeroline":false,"ticks":"","title":{"text":"Gestandaardiseerde sterfte (per 1.000)"}},"paper_bgcolor":"#FAF8F3","plot_bgcolor":"#FAF8F3"},                        {"displayModeBar": false, "responsive": true}                    )                };            </script>        </div></div>
+      <p class="caption">Eigen berekening: lineaire trend gefit op CBS-cijfers 2010&ndash;2019, doorgetrokken naar 2020&ndash;2024.</p>
+      <div class="callout own">
+        <strong>Wat dit wel en niet zegt.</strong>
+        In 2024 ligt de gestandaardiseerde sterfte
+        (6.2 per duizend) nog altijd
+        0.75 punt boven wat de trend van voor de
+        pandemie zou voorspellen (5.4 per
+        duizend). Ik heb dit bewust niet omgerekend naar een aantal
+        "extra" sterfgevallen: daarvoor is een expliciete
+        bevolkingsweging per jaar nodig, en die haal ik liever rechtstreeks
+        uit StatLine dan dat ik hem zelf benader. Een lineaire extrapolatie
+        over vijf jaar is bovendien een grove aanname &mdash; met name
+        gedragsveranderingen (zorggebruik, vaccinatiegraad, leefstijl) kunnen
+        de werkelijke trend laten afwijken van een simpele rechte lijn. Het
+        scenario is dus vooral bedoeld om de vraag scherp te stellen, niet om
+        een definitief antwoord te geven.
+      </div>
+    </section>
+
+    <section class="chapter" id="methode">
+      <h2>Methode en bronnen</h2>
+      <p>
+        Databron voor deze run: <strong>lokaal (input/*.csv)</strong>. Dit rapport
+        kan op twee manieren gevoed worden, met dezelfde uitkomst-vorm: lokale
+        CSV's in <code>input/</code> (vast, reproduceerbaar, precies te weten
+        welke cijfers gebruikt zijn) of een live call naar de
+        <a href="https://opendata.cbs.nl/statline/portal.html?_la=nl&_catalog=CBS&tableId=37979ned" target="_blank" rel="noopener">CBS StatLine
+        open-data API</a> (tabel 37979ned). Welke van de twee gebruikt wordt,
+        staat in <code>utils/parameters.py</code> (<code>LOCAL = True/False</code>),
+        of kan per run overschreven worden met <code>python main.py --remote</code>.
+        Mislukt de live call, dan valt het script automatisch terug op de
+        lokale CSV's.
+      </p>
+      <p>
+        De cijfers zijn oorspronkelijk overgenomen uit de CBS-longread
+        <em>"Trends in sterfte en doodsoorzaken, 2014-2024"</em>, hoofdstuk 3
+        (gepubliceerd 19 maart 2025); de live StatLine-koppeling kan iets
+        actuelere cijfers tonen dan die longread, omdat CBS voorlopige cijfers
+        later definitief maakt. De leeftijdsuitsplitsing en de EU-vergelijking
+        komen in beide gevallen uit de lokale CSV, omdat ik daarvoor nog geen
+        even goed geverifieerde live-bron heb gekoppeld.
+      </p>
+      <p>
+        De verwerking gebeurt in Python (pandas voor databewerking, NumPy
+        voor de trendfit, Plotly voor de interactieve grafieken). De volledige
+        code staat in de bijbehorende repository: <code>main.py</code> als
+        startpunt, en <code>utils/</code> met de losse stappen
+        (<code>data_loader.py</code>, <code>analysis.py</code>,
+        <code>visuals.py</code>, <code>report.py</code>, <code>parameters.py</code>).
+      </p>
+      <h3>Beperkingen</h3>
+      <p>
+        Dit is een oefenproject, geen collegiaal getoetste CBS-publicatie.
+        De scenario-analyse in het vorige hoofdstuk is met opzet eenvoudig
+        gehouden (lineaire trend, geen rekening met leeftijdsstructuurveranderingen
+        binnen het scenario zelf) en moet gelezen worden als illustratie van
+        een aanpak, niet als een gevalideerde uitkomst.
+      </p>
+    </section>
+
+    <footer>
+      <p>
+        Gemaakt als voorbereiding op een sollicitatie. Cijfers: &copy; CBS,
+        overgenomen uit de longread
+        <a href="https://www.cbs.nl/nl-nl/longread/statistische-trends/2025/trends-in-sterfte-en-doodsoorzaken-2014-2024/3-aantal-overledenen-levensverwachting-en-gestandaardiseerde-sterfte" target="_blank" rel="noopener">
+          "Trends in sterfte en doodsoorzaken, 2014-2024"</a> (CBS, 19 maart 2025).
+        Analyse, tekst en vormgeving van dit rapport zijn eigen werk en niet
+        gelieerd aan of goedgekeurd door het CBS.
+      </p>
+    </footer>
+
+  </main>
+</div>
+</body>
+</html>

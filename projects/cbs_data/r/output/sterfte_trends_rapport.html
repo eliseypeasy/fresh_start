@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trends in sterfte en levensverwachting, Nederland 1950-2024 (eigen analyse)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1F2A44;
+  --paper: #FAF8F3;
+  --paper-raised: #FFFFFF;
+  --grid: #E4E0D6;
+  --gold: #B8862B;
+  --teal: #3E7C8C;
+  --wine: #8C3B4A;
+  --muted: #6B6759;
+  --serif: Lora, Georgia, serif;
+  --sans: IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
+  --content-width: 700px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.toc {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 48px 20px 48px 32px;
+  border-right: 1px solid var(--grid);
+}
+
+.toc-label {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: chapter; }
+.toc li { counter-increment: chapter; margin-bottom: 4px; }
+.toc a {
+  display: flex;
+  gap: 10px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 13.5px;
+  padding: 6px 8px;
+  border-radius: 3px;
+}
+.toc a::before {
+  content: counter(chapter);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  width: 14px;
+  flex-shrink: 0;
+}
+.toc a:hover { background: var(--grid); }
+
+.main { padding: 0 32px 96px; min-width: 0; }
+
+.hero {
+  max-width: var(--content-width);
+  padding: 72px 0 40px;
+}
+.hero .eyebrow {
+  color: var(--teal);
+  font-size: 13.5px;
+  margin: 0 0 14px;
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-size: 42px;
+  line-height: 1.15;
+  margin: 0 0 18px;
+  font-weight: 600;
+}
+.hero p.lede {
+  font-size: 18px;
+  color: #3A3729;
+  max-width: 60ch;
+  margin: 0 0 22px;
+}
+.hero .meta {
+  font-size: 13px;
+  color: var(--muted);
+  border-top: 1px solid var(--grid);
+  padding-top: 16px;
+  max-width: 60ch;
+}
+
+section.chapter {
+  max-width: var(--content-width);
+  padding: 48px 0;
+  border-top: 1px solid var(--grid);
+}
+section.chapter:first-of-type { border-top: none; }
+
+section.chapter h2 {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 600;
+  margin: 0 0 18px;
+}
+section.chapter h3 {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--teal);
+  margin: 32px 0 4px;
+}
+section.chapter p { margin: 0 0 16px; font-size: 15.5px; }
+section.chapter .caption {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.stat-row {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin: 8px 0 28px;
+}
+.stat {
+  background: var(--paper-raised);
+  border: 1px solid var(--grid);
+  border-radius: 4px;
+  padding: 14px 18px;
+  min-width: 150px;
+}
+.stat .num {
+  font-family: var(--serif);
+  font-size: 26px;
+  display: block;
+  line-height: 1.1;
+}
+.stat .label { font-size: 12px; color: var(--muted); }
+
+.chart-frame {
+  background: var(--paper-raised);
+  border: 1px solid var(--grid);
+  border-radius: 4px;
+  padding: 18px 18px 6px;
+  margin: 20px 0 8px;
+  overflow-x: auto;
+}
+
+.callout {
+  border-left: 3px solid var(--gold);
+  background: rgba(184, 134, 43, 0.07);
+  padding: 14px 18px;
+  font-size: 14.5px;
+  margin: 20px 0;
+}
+.callout strong { color: var(--gold); }
+
+.callout.own {
+  border-left-color: var(--wine);
+  background: rgba(140, 59, 74, 0.06);
+}
+.callout.own strong { color: var(--wine); }
+
+footer {
+  max-width: var(--content-width);
+  padding: 48px 0 96px;
+  border-top: 1px solid var(--grid);
+  font-size: 13px;
+  color: var(--muted);
+}
+footer a { color: var(--teal); }
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+  .toc { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--grid); }
+  .hero h1 { font-size: 32px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="toc">
+    <div class="toc-label">Inhoud</div>
+    <ol><li><a href="#inleiding">Inleiding</a></li>
+<li><a href="#overledenen">Aantal overledenen</a></li>
+<li><a href="#leeftijd">Leeftijdsopbouw</a></li>
+<li><a href="#levensverwachting">Levensverwachting</a></li>
+<li><a href="#eu">Nederland in Europa</a></li>
+<li><a href="#gestandaardiseerd">Gestandaardiseerde sterfte</a></li>
+<li><a href="#scenario">Scenario: zonder de pandemie</a></li>
+<li><a href="#methode">Methode en bronnen</a></li></ol>
+  </nav>
+
+  <main class="main">
+
+    <div class="hero">
+      <p class="eyebrow">Eigen analyse &middot; op basis van CBS-open data</p>
+      <h1>Trends in sterfte en levensverwachting, Nederland 1950&ndash;2024</h1>
+      <p class="lede">
+        Een verkenning van hoe lang mensen in Nederland leven, hoeveel mensen
+        er jaarlijks overlijden, en wat de coronapandemie daarin structureel
+        heeft veranderd &mdash; inclusief een eigen scenario voor wat de
+        sterfte had kunnen zijn zonder de pandemie.
+      </p>
+      <p class="meta">
+        Gepubliceerd -d September 2026 &middot; cijfers: CBS &middot;
+        dit is een oefenanalyse ter voorbereiding van een sollicitatie, geen
+        officiele CBS-publicatie.
+      </p>
+    </div>
+
+    <section class="chapter" id="inleiding">
+      <h2>Inleiding</h2>
+      <p>
+        In 2024 overleden er in Nederland
+        172 duizend mensen, ongeveer
+        2530 meer dan een jaar eerder.
+        Dat aantal stijgt al decennia, vooral doordat de bevolking groeit en
+        vergrijst. Om te zien of Nederlanders ook echt "meer" of "minder"
+        sterven, moet je corrigeren voor die groei en vergrijzing &mdash; dat
+        heet standaardiseren, en het is de rode draad van dit rapport.
+      </p>
+      <p>
+        Dit rapport gebruikt cijfers zoals gepubliceerd door het CBS. De
+        analyse en de duiding zijn van mij; aan het eind van het rapport
+        (hoofdstuk "Scenario") voeg ik een eigen tegenfeitelijke analyse toe
+        die niet van het CBS afkomstig is.
+      </p>
+      <div class="stat-row">
+        <div class="stat"><span class="num">80.5 jr</span><span class="label">levensverwachting mannen, 2024</span></div>
+        <div class="stat"><span class="num">83.3 jr</span><span class="label">levensverwachting vrouwen, 2024</span></div>
+        <div class="stat"><span class="num">172k</span><span class="label">overledenen in 2024</span></div>
+      </div>
+    </section>
+
+    <section class="chapter" id="overledenen">
+      <h2>Aantal overledenen</h2>
+      <p>
+        Het absolute aantal overledenen zegt op zichzelf weinig: een grotere,
+        oudere bevolking levert vanzelf meer sterfgevallen op. Zet je het
+        aantal af tegen de bevolkingsomvang (relatief), dan is de stijging
+        al veel vlakker. Corrigeer je ook voor de veranderende leeftijdsopbouw
+        (gestandaardiseerd), dan zie je een dalende trend &mdash; ondanks de
+        stijgende absolute cijfers. Gebruik de knoppen boven de grafiek om
+        tussen de drie weergaven te wisselen.
+      </p>
+      <div class="chart-frame"><script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<div id="fig1" class="plotly-graph-div" style="height:100%; width:100%;"></div>
+<script>
+  Plotly.newPlot("fig1", [{"x":[1950,1951,1952,1953,1954,1955,1956,1957,1958,1959,1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[7.593,7.756,7.635,8.09,7.962,8.171,8.481,8.296,8.449,8.607,8.783,8.832,9.397,9.573,9.344,9.803,10.052,9.979,10.499,10.762,10.962,11.024,11.358,11.068,10.925,11.374,11.445,11.009,11.442,11.257,11.428,11.552,11.726,11.776,11.981,12.27,12.531,12.22,12.416,12.891,12.882,12.996,12.989,13.78,13.347,13.568,13.756,13.578,13.748,14.049,14.053,14.038,14.236,14.194,13.655,13.64,13.537,13.302,13.514,13.424,13.606,13.574,14.081,14.125,13.922,14.713,14.9,15.021,15.336,15.189,16.868,17.097,17.011,16.952,17.205],"type":"scatter","mode":"lines","name":"Absoluut (x 10.000)","line":{"color":"#1F2A44","width":2.5},"hovertemplate":"%{x}: %{y:.2f} (x 10.000)<extra><\/extra>","visible":true},{"x":[1950,1951,1952,1953,1954,1955,1956,1957,1958,1959,1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[7.5,7.6,7.4,7.7,7.5,7.6,7.8,7.5,7.6,7.6,7.6,7.6,8,8,7.7,8,8.1,7.9,8.2,8.4,8.4,8.4,8.5,8.2,8.1,8.3,8.3,7.9,8.2,8,8.1,8.1,8.2,8.2,8.3,8.5,8.6,8.3,8.4,8.7,8.6,8.6,8.6,9,8.7,8.8,8.9,8.7,8.8,8.9,8.8,8.7,8.8,8.7,8.4,8.4,8.3,8.1,8.2,8.1,8.2,8.1,8.4,8.4,8.3,8.7,8.7,8.8,8.9,8.8,9.7,9.8,9.6,9.5,9.6],"type":"scatter","mode":"lines","name":"Relatief (per 1.000 inwoners)","line":{"color":"#3E7C8C","width":2.5},"hovertemplate":"%{x}: %{y:.1f} per 1.000<extra><\/extra>","visible":false},{"x":[1950,1951,1952,1953,1954,1955,1956,1957,1958,1959,1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[13.2,13.1,12.5,12.9,12.4,12.4,12.5,11.9,11.8,11.7,11.6,11.3,11.7,11.7,11.1,11.4,11.4,11,11.3,11.3,11.3,11.1,11.3,10.8,10.4,10.6,10.4,9.8,9.9,9.5,9.4,9.2,9.2,9.1,9,9,9.1,8.7,8.6,8.8,8.6,8.5,8.4,8.8,8.4,8.4,8.4,8.1,8.1,8.1,8,7.9,7.9,7.7,7.3,7.2,7,6.7,6.6,6.4,6.4,6.2,6.3,6.1,5.9,6.1,6,5.9,5.9,5.7,6.2,6.2,6.1,5.9,6.2],"type":"scatter","mode":"lines","name":"Gestandaardiseerd (naar bevolking 1990)","line":{"color":"#B8862B","width":2.5},"hovertemplate":"%{x}: %{y:.1f} per 1.000<extra><\/extra>","visible":false}], {"font":{"family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":13,"color":"#1F2A44"},"paper_bgcolor":"#FAF8F3","plot_bgcolor":"#FAF8F3","margin":{"l":56,"r":24,"t":24,"b":44},"hoverlabel":{"bgcolor":"#1F2A44","font":{"color":"#FAF8F3","family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":12},"bordercolor":"#1F2A44"},"legend":{"orientation":"h","yanchor":"bottom","y":1.02,"xanchor":"left","x":0,"font":{"size":12}},"xaxis":{"showgrid":false,"showline":true,"linecolor":"#E4E0D6","ticks":"outside","tickcolor":"#E4E0D6","zeroline":false},"yaxis":{"showgrid":true,"gridcolor":"#E4E0D6","zeroline":false,"ticks":"","title":"Aantal overledenen"},"showlegend":false,"updatemenus":[{"type":"buttons","direction":"right","x":0,"y":1.18,"xanchor":"left","showactive":true,"buttons":[{"label":"Absoluut","method":"update","args":[{"visible":[true,false,false]}]},{"label":"Relatief","method":"update","args":[{"visible":[false,true,false]}]},{"label":"Gestandaardiseerd","method":"update","args":[{"visible":[false,false,true]}]}],"font":{"size":12},"bgcolor":"#FAF8F3","bordercolor":"#E4E0D6"}]}, {displayModeBar: false, responsive: true});
+</script></div>
+      <p class="caption">Bron: CBS, Trends in sterfte en doodsoorzaken 2014&ndash;2024, tabel 3.5.</p>
+    </section>
+
+    <section class="chapter" id="leeftijd">
+      <h2>Leeftijdsopbouw van de overledenen</h2>
+      <p>
+        Van alle mensen die in 2024 overleden was het
+        overgrote deel 80 jaar of ouder. Dat aandeel is de afgelopen dertig
+        jaar gestaag gegroeid, terwijl het aandeel overledenen onder de 65
+        juist is gekrompen &mdash; een direct gevolg van de vergrijzing en van
+        betere overlevingskansen op middelbare leeftijd.
+      </p>
+      <div class="chart-frame"><div id="fig2" class="plotly-graph-div" style="height:100%; width:100%;"></div>
+<script>
+  Plotly.newPlot("fig2", [{"x":[1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[19.2983231988207,19.1827625562478,18.9383059735018,18.9341150114197,18.9035284403539,19.0077351683306,18.9967017388888,18.8964209195322,18.9261357231428,19.0797712243598,18.5525138927582,18.4513784238986,18.3781630106298,18.3533625384798,18.2322047156107,17.8886945273339,17.39415504527,16.6163635459794,16.1145527275302,15.9341488116188,15.0454687563717,14.958019288979,14.4420626572756,14.0633660009259,13.7834545873523,12.8546698443188,13.2548019558758,12.9267776523702,12.5907704650161,12.3073972252414],"type":"scatter","stackgroup":"one","name":"0 tot 65 jaar","line":{"width":0.5,"color":"#1F2A44"},"fillcolor":"#1F2A44","hovertemplate":"%{x}: %{y:.1f}%<extra><\/extra>"},{"x":[1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[35.2364105398931,35.1734866713676,34.9712408769875,34.8154667520112,34.6857716372333,33.8660897905741,33.5304216502703,32.875557584911,32.030633524969,31.7861929067835,31.462881775927,30.7522973731643,30.6919156229797,29.7389296708501,29.7962528401684,29.7292331211689,29.5643910093487,29.3808100104394,29.4863534992389,29.6711031941561,29.6770291027227,29.773082679517,29.5744737507822,29.9778955810724,30.2465681272015,30.3886695360391,31.3396345600449,31.1459509029345,31.2244500681332,30.9687243898611],"type":"scatter","stackgroup":"one","name":"65 tot 80 jaar","line":{"width":0.5,"color":"#3E7C8C"},"fillcolor":"#3E7C8C","hovertemplate":"%{x}: %{y:.1f}%<extra><\/extra>"},{"x":[1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[45.4652662612862,45.6437507723846,46.0904531495106,46.2504182365692,46.4106999224127,47.1261750410953,47.4728766108408,48.2280214955569,49.0432307518882,49.1340358688568,49.9846043313148,50.7963242029371,50.9299213663905,51.9077077906701,51.971542444221,52.3820723514972,53.0414539453813,54.0028264435812,54.3990937732309,54.3947479942251,55.2775021409056,55.268898031504,55.9834635919422,55.9587384180017,55.9699772854462,56.7566606196422,55.4055634840793,55.9272714446953,56.1847794668507,56.7238783848975],"type":"scatter","stackgroup":"one","name":"80 jaar of ouder","line":{"width":0.5,"color":"#B8862B"},"fillcolor":"#B8862B","hovertemplate":"%{x}: %{y:.1f}%<extra><\/extra>"}], {"font":{"family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":13,"color":"#1F2A44"},"paper_bgcolor":"#FAF8F3","plot_bgcolor":"#FAF8F3","margin":{"l":56,"r":24,"t":24,"b":44},"hoverlabel":{"bgcolor":"#1F2A44","font":{"color":"#FAF8F3","family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":12},"bordercolor":"#1F2A44"},"legend":{"orientation":"h","yanchor":"bottom","y":1.02,"xanchor":"left","x":0,"font":{"size":12}},"xaxis":{"showgrid":false,"showline":true,"linecolor":"#E4E0D6","ticks":"outside","tickcolor":"#E4E0D6","zeroline":false},"yaxis":{"showgrid":true,"gridcolor":"#E4E0D6","zeroline":false,"ticks":"","title":"Aandeel van totaal aantal overledenen (%)","range":[0,100]}}, {displayModeBar: false, responsive: true});
+</script></div>
+      <p class="caption">Bron: CBS, tabel 3.2. Aandelen berekend als percentage van het totaal aantal overledenen per jaar.</p>
+    </section>
+
+    <section class="chapter" id="levensverwachting">
+      <h2>Levensverwachting</h2>
+      <p>
+        De levensverwachting bij geboorte laat zien hoe lang iemand
+        gemiddeld zou leven als de sterftekansen van dit jaar de rest van
+        zijn of haar leven zouden gelden. Voor mannen is dat cijfer in
+        2024 inmiddels iets hoger dan vlak voor de
+        pandemie (80.46 jaar in 2019); voor vrouwen
+        ligt het nog altijd iets lager dan in 2019
+        (83.56 jaar).
+      </p>
+      <div class="chart-frame"><div id="fig3" class="plotly-graph-div" style="height:100%; width:100%;"></div>
+<script>
+  Plotly.newPlot("fig3", [{"x":[1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[74.6,74.66,75.16,75.19,75.34,75.54,75.8,75.99,76.24,76.87,77.19,77.63,78.01,78.32,78.53,78.77,79.18,79.14,79.41,79.87,79.73,79.88,80.06,80.16,80.46,79.67,79.68,80.1,80.31,80.53],"type":"scatter","mode":"lines","name":"Mannen","line":{"color":"#3E7C8C","width":2.5},"hovertemplate":"%{x}: %{y:.2f} jaar<extra><\/extra>"},{"x":[1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[80.36,80.35,80.55,80.69,80.45,80.58,80.71,80.69,80.93,81.44,81.6,81.89,82.31,82.28,82.65,82.72,82.85,82.82,83.04,83.29,83.13,83.13,83.32,83.33,83.56,83.08,82.99,83.09,83.33,83.28],"type":"scatter","mode":"lines","name":"Vrouwen","line":{"color":"#8C3B4A","width":2.5},"hovertemplate":"%{x}: %{y:.2f} jaar<extra><\/extra>"}], {"font":{"family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":13,"color":"#1F2A44"},"paper_bgcolor":"#FAF8F3","plot_bgcolor":"#FAF8F3","margin":{"l":56,"r":24,"t":24,"b":44},"hoverlabel":{"bgcolor":"#1F2A44","font":{"color":"#FAF8F3","family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":12},"bordercolor":"#1F2A44"},"legend":{"orientation":"h","yanchor":"bottom","y":1.02,"xanchor":"left","x":0,"font":{"size":12}},"xaxis":{"showgrid":false,"showline":true,"linecolor":"#E4E0D6","ticks":"outside","tickcolor":"#E4E0D6","zeroline":false},"yaxis":{"showgrid":true,"gridcolor":"#E4E0D6","zeroline":false,"ticks":"","title":"Levensverwachting bij geboorte (jaren)"}}, {displayModeBar: false, responsive: true});
+</script></div>
+      <p class="caption">Bron: CBS, tabel 3.3.</p>
+    </section>
+
+    <section class="chapter" id="eu">
+      <h2>Nederland in Europa</h2>
+      <p>
+        Met een levensverwachting van 82,0 jaar in 2023 zit Nederland boven
+        het EU-gemiddelde van 81,5 jaar, maar duidelijk achter koplopers als
+        Spanje en Italie. De spreiding tussen EU-landen is groot: bijna tien
+        jaar verschil tussen de hoogste en de laagste waarde, wat vooral
+        samenhangt met verschillen in welvaart en toegang tot zorg.
+      </p>
+      <div class="chart-frame"><div id="fig4" class="plotly-graph-div" style="height:100%; width:100%;"></div>
+<script>
+  Plotly.newPlot("fig4", [{"x":[75.8,75.9,76.6,76.9,77.3,78.1,78.6,78.6,78.8,80,81.2,81.6,81.6,81.7,81.9,82,82,82.4,82.5,82.5,82.6,83.1,83.4,83.4,83.6,83.8,84],"y":["Bulgarije","Letland","Roemenie","Hongarije","Litouwen","Slowakije","Kroatie","Polen","Estland","Tsjechie","Duitsland","Oostenrijk","Griekenland","Finland","Denemarken","Nederland","Slovenie","Portugal","Belgie","Cyprus","Ierland","Frankrijk","Zweden","Luxemburg","Malta","Italie","Spanje"],"type":"bar","orientation":"h","marker":{"color":["#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#8C3B4A","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4","#C9C4B4"]},"hovertemplate":"%{y}: %{x:.1f} jaar<extra><\/extra>"}], {"font":{"family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":13,"color":"#1F2A44"},"paper_bgcolor":"#FAF8F3","plot_bgcolor":"#FAF8F3","margin":{"l":110,"r":24,"t":24,"b":44},"hoverlabel":{"bgcolor":"#1F2A44","font":{"color":"#FAF8F3","family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":12},"bordercolor":"#1F2A44"},"legend":{"orientation":"h","yanchor":"bottom","y":1.02,"xanchor":"left","x":0,"font":{"size":12}},"xaxis":{"showgrid":false,"showline":true,"linecolor":"#E4E0D6","ticks":"outside","tickcolor":"#E4E0D6","zeroline":false,"title":"Levensverwachting bij geboorte, 2023 (jaren)"},"yaxis":{"title":"","tickfont":{"size":11}},"height":620,"shapes":[{"type":"line","x0":81.5,"x1":81.5,"xref":"x","y0":0,"y1":1,"yref":"y domain","line":{"color":"#6B6759","dash":"dot"}}],"annotations":[{"x":81.5,"y":1,"xref":"x","yref":"y domain","xanchor":"center","yanchor":"bottom","showarrow":false,"text":"EU-27 gemiddelde","font":{"color":"#6B6759","size":11}}]}, {displayModeBar: false, responsive: true});
+</script></div>
+      <p class="caption">Bron: CBS/Eurostat, tabel 3.4.</p>
+    </section>
+
+    <section class="chapter" id="gestandaardiseerd">
+      <h2>Gestandaardiseerde sterfte: het langetermijnbeeld</h2>
+      <p>
+        Gestandaardiseerd voor leeftijd en geslacht daalt de sterfte in
+        Nederland al sinds 1950 vrijwel continu &mdash; van 13,2 per duizend
+        in 1950 naar een dieptepunt van 5,7 per duizend in 2019. Sinds de
+        pandemie ligt dat cijfer structureel hoger en is het nog niet terug
+        op het niveau van 2019.
+      </p>
+      <div class="chart-frame"><div id="fig5" class="plotly-graph-div" style="height:100%; width:100%;"></div>
+<script>
+  Plotly.newPlot("fig5", [{"x":[2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[6.4,6.2,6.3,6.1,5.9,6.1,6,5.9,5.9,5.7,6.2,6.2,6.1,5.9,6.2],"type":"scatter","mode":"lines+markers","line":{"color":"#1F2A44","width":2.5},"marker":{"size":5,"color":"#1F2A44"},"hovertemplate":"%{x}: %{y:.1f} per 1.000<extra><\/extra>","showlegend":false}], {"font":{"family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":13,"color":"#1F2A44"},"paper_bgcolor":"#FAF8F3","plot_bgcolor":"#FAF8F3","margin":{"l":56,"r":24,"t":24,"b":44},"hoverlabel":{"bgcolor":"#1F2A44","font":{"color":"#FAF8F3","family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":12},"bordercolor":"#1F2A44"},"legend":{"orientation":"h","yanchor":"bottom","y":1.02,"xanchor":"left","x":0,"font":{"size":12}},"xaxis":{"showgrid":false,"showline":true,"linecolor":"#E4E0D6","ticks":"outside","tickcolor":"#E4E0D6","zeroline":false},"yaxis":{"showgrid":true,"gridcolor":"#E4E0D6","zeroline":false,"ticks":"","title":"Gestandaardiseerde sterfte (per 1.000)"},"annotations":[{"x":2015,"y":6.1,"text":"Griepepidemie","showarrow":true,"arrowhead":0,"arrowcolor":"#B8862B","ax":0,"ay":-38,"font":{"size":11,"color":"#B8862B"},"bordercolor":"#B8862B","borderwidth":1,"borderpad":3,"bgcolor":"#FAF8F3"},{"x":2018,"y":5.9,"text":"Lange griepepidemie","showarrow":true,"arrowhead":0,"arrowcolor":"#B8862B","ax":0,"ay":-38,"font":{"size":11,"color":"#B8862B"},"bordercolor":"#B8862B","borderwidth":1,"borderpad":3,"bgcolor":"#FAF8F3"},{"x":2020,"y":6.2,"text":"Start coronapandemie","showarrow":true,"arrowhead":0,"arrowcolor":"#8C3B4A","ax":0,"ay":-38,"font":{"size":11,"color":"#8C3B4A"},"bordercolor":"#8C3B4A","borderwidth":1,"borderpad":3,"bgcolor":"#FAF8F3"},{"x":2021,"y":6.2,"text":"Coronapandemie","showarrow":true,"arrowhead":0,"arrowcolor":"#8C3B4A","ax":0,"ay":-38,"font":{"size":11,"color":"#8C3B4A"},"bordercolor":"#8C3B4A","borderwidth":1,"borderpad":3,"bgcolor":"#FAF8F3"},{"x":2022,"y":6.1,"text":"Coronapandemie (afnemend)","showarrow":true,"arrowhead":0,"arrowcolor":"#8C3B4A","ax":0,"ay":-38,"font":{"size":11,"color":"#8C3B4A"},"bordercolor":"#8C3B4A","borderwidth":1,"borderpad":3,"bgcolor":"#FAF8F3"}]}, {displayModeBar: false, responsive: true});
+</script></div>
+      <p class="caption">Bron: CBS, tabel 3.5. Annotaties (griepepidemieen, coronapandemie) op basis van de duiding in dezelfde CBS-publicatie.</p>
+      <div class="callout">
+        <strong>Waarom standaardiseren?</strong> Zonder correctie voor
+        leeftijd zou een vergrijzende bevolking altijd een stijgende sterfte
+        laten zien, ook als niemand "sneller" doodgaat dan voorheen.
+        Standaardisatie rekent iedereen af tegen eenzelfde referentiebevolking
+        (hier: die van 1990), zodat je puur de verandering in sterftekansen
+        overhoudt.
+      </div>
+    </section>
+
+    <section class="chapter" id="scenario">
+      <h2>Scenario: zonder de pandemie</h2>
+      <p>
+        Dit hoofdstuk is mijn eigen toevoeging aan de CBS-cijfers. Ik heb een
+        eenvoudige lineaire trend gefit op de gestandaardiseerde sterfte in
+        de tien jaar voor de pandemie (2010&ndash;2019) en die trend
+        doorgetrokken naar 2020&ndash;2024. Dat geeft een
+        ruwe schatting van waar de sterfte had kunnen liggen als de
+        trendbreuk van de pandemie niet had plaatsgevonden.
+      </p>
+      <div class="chart-frame"><div id="fig6" class="plotly-graph-div" style="height:100%; width:100%;"></div>
+<script>
+  Plotly.newPlot("fig6", [{"x":[1950,1951,1952,1953,1954,1955,1956,1957,1958,1959,1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[13.2,13.1,12.5,12.9,12.4,12.4,12.5,11.9,11.8,11.7,11.6,11.3,11.7,11.7,11.1,11.4,11.4,11,11.3,11.3,11.3,11.1,11.3,10.8,10.4,10.6,10.4,9.8,9.9,9.5,9.4,9.2,9.2,9.1,9,9,9.1,8.7,8.6,8.8,8.6,8.5,8.4,8.8,8.4,8.4,8.4,8.1,8.1,8.1,8,7.9,7.9,7.7,7.3,7.2,7,6.7,6.6,6.4,6.4,6.2,6.3,6.1,5.9,6.1,6,5.9,5.9,5.7,6.2,6.2,6.1,5.9,6.2],"type":"scatter","mode":"lines","name":"Werkelijk","line":{"color":"#1F2A44","width":2.5},"hovertemplate":"%{x}: %{y:.2f} per 1.000 (werkelijk)<extra><\/extra>"},{"x":[1950,1951,1952,1953,1954,1955,1956,1957,1958,1959,1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[10.1545454545453,10.0909090909089,10.0272727272726,9.96363636363621,9.89999999999985,9.83636363636349,9.77272727272712,9.70909090909076,9.6454545454544,9.58181818181804,9.51818181818167,9.45454545454533,9.39090909090896,9.3272727272726,9.26363636363624,9.19999999999987,9.13636363636351,9.07272727272715,9.00909090909079,8.94545454545442,8.88181818181806,8.8181818181817,8.75454545454535,8.69090909090899,8.62727272727263,8.56363636363626,8.4999999999999,8.43636363636354,8.37272727272718,8.30909090909081,8.24545454545445,8.18181818181809,8.11818181818174,8.05454545454538,7.99090909090901,7.92727272727265,7.86363636363629,7.79999999999993,7.73636363636356,7.6727272727272,7.60909090909084,7.54545454545448,7.48181818181813,7.41818181818176,7.3545454545454,7.29090909090904,7.22727272727268,7.16363636363631,7.09999999999995,7.03636363636359,6.97272727272723,6.90909090909086,6.84545454545452,6.78181818181815,6.71818181818179,6.65454545454543,6.59090909090907,6.5272727272727,6.46363636363634,6.39999999999998,6.33636363636361,6.27272727272725,6.20909090909089,6.14545454545453,6.08181818181816,6.0181818181818,5.95454545454544,5.89090909090908,5.82727272727274,5.76363636363638,5.70000000000002,5.63636363636365,5.57272727272729,5.50909090909093,5.44545454545457],"type":"scatter","mode":"lines","name":"Verwacht bij doorzetten trend 2010-2019","line":{"color":"#B8862B","width":2,"dash":"dash"},"hovertemplate":"%{x}: %{y:.2f} per 1.000 (scenario)<extra><\/extra>"},{"x":[2019,2020,2021,2022,2023,2024,2024,2023,2022,2021,2020,2019],"y":[5.7,6.2,6.2,6.1,5.9,6.2,5.44545454545457,5.50909090909093,5.57272727272729,5.63636363636365,5.70000000000002,5.76363636363638],"type":"scatter","fill":"toself","fillcolor":"rgba(140,59,74,0.12)","line":{"color":"rgba(0,0,0,0)"},"hoverinfo":"skip","showlegend":false}], {"font":{"family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":13,"color":"#1F2A44"},"paper_bgcolor":"#FAF8F3","plot_bgcolor":"#FAF8F3","margin":{"l":56,"r":24,"t":24,"b":44},"hoverlabel":{"bgcolor":"#1F2A44","font":{"color":"#FAF8F3","family":"IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif","size":12},"bordercolor":"#1F2A44"},"legend":{"orientation":"h","yanchor":"bottom","y":1.02,"xanchor":"left","x":0,"font":{"size":12}},"xaxis":{"showgrid":false,"showline":true,"linecolor":"#E4E0D6","ticks":"outside","tickcolor":"#E4E0D6","zeroline":false},"yaxis":{"showgrid":true,"gridcolor":"#E4E0D6","zeroline":false,"ticks":"","title":"Gestandaardiseerde sterfte (per 1.000)"}}, {displayModeBar: false, responsive: true});
+</script></div>
+      <p class="caption">Eigen berekening: lineaire trend gefit op CBS-cijfers 2010&ndash;2019, doorgetrokken naar 2020&ndash;2024.</p>
+      <div class="callout own">
+        <strong>Wat dit wel en niet zegt.</strong>
+        In 2024 ligt de gestandaardiseerde sterfte
+        (6.2 per duizend) nog altijd
+        0.75 punt boven wat de trend van voor de
+        pandemie zou voorspellen (5.4 per
+        duizend). Ik heb dit bewust niet omgerekend naar een aantal
+        "extra" sterfgevallen: daarvoor is een expliciete
+        bevolkingsweging per jaar nodig, en die haal ik liever rechtstreeks
+        uit StatLine dan dat ik hem zelf benader. Een lineaire extrapolatie
+        over vijf jaar is bovendien een grove aanname &mdash; met name
+        gedragsveranderingen (zorggebruik, vaccinatiegraad, leefstijl) kunnen
+        de werkelijke trend laten afwijken van een simpele rechte lijn. Het
+        scenario is dus vooral bedoeld om de vraag scherp te stellen, niet om
+        een definitief antwoord te geven.
+      </div>
+    </section>
+
+    <section class="chapter" id="methode">
+      <h2>Methode en bronnen</h2>
+      <p>
+        Databron voor deze run: <strong>lokaal (input/*.csv)</strong>. Dit rapport
+        kan op twee manieren gevoed worden, met dezelfde uitkomst-vorm: lokale
+        CSV's in <code>input/</code> (vast, reproduceerbaar, precies te weten
+        welke cijfers gebruikt zijn) of een live call naar de
+        <a href="https://opendata.cbs.nl/statline/portal.html?_la=nl&_catalog=CBS&tableId=37979ned" target="_blank" rel="noopener">CBS StatLine
+        open-data API</a> (tabel 37979ned). Welke van de twee gebruikt wordt,
+        staat bovenaan in <code>main.R</code> (<code>local &lt;- TRUE/FALSE</code>).
+        Mislukt de live call, dan valt het script automatisch terug op de
+        lokale CSV's.
+      </p>
+      <p>
+        De cijfers zijn oorspronkelijk overgenomen uit de CBS-longread
+        <em>"Trends in sterfte en doodsoorzaken, 2014-2024"</em>, hoofdstuk 3
+        (gepubliceerd 19 maart 2025); de live StatLine-koppeling kan iets
+        actuelere cijfers tonen dan die longread, omdat CBS voorlopige cijfers
+        later definitief maakt. De leeftijdsuitsplitsing en de EU-vergelijking
+        komen in beide gevallen uit de lokale CSV, omdat ik daarvoor nog geen
+        even goed geverifieerde live-bron heb gekoppeld.
+      </p>
+      <p>
+        De verwerking gebeurt in R (base R voor databewerking en de
+        lineaire trendfit met <code>lm()</code>, met alleen <code>jsonlite</code>
+        en <code>httr</code> als externe dependencies). De volledige code
+        staat in de bijbehorende repository: <code>main.R</code> als
+        startpunt, en <code>utils/</code> met de losse stappen
+        (<code>data_loader.R</code>, <code>analysis.R</code>,
+        <code>visuals.R</code>, <code>report.R</code>, <code>parameters.R</code>).
+      </p>
+      <h3>Beperkingen</h3>
+      <p>
+        Dit is een oefenproject, geen collegiaal getoetste CBS-publicatie.
+        De scenario-analyse in het vorige hoofdstuk is met opzet eenvoudig
+        gehouden (lineaire trend, geen rekening met leeftijdsstructuurveranderingen
+        binnen het scenario zelf) en moet gelezen worden als illustratie van
+        een aanpak, niet als een gevalideerde uitkomst.
+      </p>
+    </section>
+
+    <footer>
+      <p>
+        Gemaakt als voorbereiding op een sollicitatie. Cijfers: &copy; CBS,
+        overgenomen uit de longread
+        <a href="https://www.cbs.nl/nl-nl/longread/statistische-trends/2025/trends-in-sterfte-en-doodsoorzaken-2014-2024/3-aantal-overledenen-levensverwachting-en-gestandaardiseerde-sterfte" target="_blank" rel="noopener">
+          "Trends in sterfte en doodsoorzaken, 2014-2024"</a> (CBS, 19 maart 2025).
+        Analyse, tekst en vormgeving van dit rapport zijn eigen werk en niet
+        gelieerd aan of goedgekeurd door het CBS.
+      </p>
+    </footer>
+
+  </main>
+</div>
+</body>
+</html>
+
