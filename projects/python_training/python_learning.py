@@ -102,7 +102,7 @@ print(net_capacity(35, 4, 6, 0))   # should match E1's available_hours in the CS
 
 employees["net_check"] = employees.apply(
     # FILL IN: call net_capacity() using the right columns from `row`
-    lambda row: net_capacity(row["base_hours"], row[____], row[____], row[____]),
+    lambda row: net_capacity(row["base_hours"], row["meeting_overhead"], row["training_hours"], row["research_hours"]),
     axis=1
 )
 
@@ -122,7 +122,7 @@ print((employees["net_check"] == employees["available_hours"]).all())
 # FILL IN: build a dictionary mapping employee_id -> available_hours
 # Hint: pandas has a shortcut for this —
 # df.set_index("key_col")["value_col"].to_dict()
-hours_lookup = employees.set_index(____)[____].to_dict()
+hours_lookup = employees.set_index("employee_id")["available_hours"].to_dict()
 print(hours_lookup)
 print(hours_lookup["E1"])   # look up a single value by key, like lookup[["E1"]] in R
 
@@ -137,7 +137,7 @@ for emp_id, hrs in hours_lookup.items():
 
 # Step 2: the same thing as a one-line comprehension
 # FILL IN: rewrite the loop above as a dict comprehension
-doubled_v2 = {____: ____ for emp_id, hrs in hours_lookup.items()}
+doubled_v2 = {emp_id: hrs * 2 for emp_id, hrs in hours_lookup.items()}
 
 print(doubled == doubled_v2)   # should print True — same result, two ways of writing it
 
